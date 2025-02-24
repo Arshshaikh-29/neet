@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEET Registration</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 500px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            background: white;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+        .delete-btn {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>NEET Registration</h2>
+        <input type="text" id="name" placeholder="Name" required>
+        <input type="text" id="mobile" placeholder="Mobile No." required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="date" id="date" required>
+        <input type="text" id="location" placeholder="Location" required>
+        <button onclick="registerStudent()">Register</button>
+        <button onclick="downloadPDF()">Download PDF</button>
+        <button onclick="clearAll()">Clear All</button>
+    </div>
+    
+    <table id="registrationTable">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Mobile</th>
+                <th>Email</th>
+                <th>Date</th>
+                <th>Location</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        function formatDate(date) {
+            let d = new Date(date);
+            let day = d.getDate().toString().padStart(2, '0');
+            let month = (d.getFullYear() % 100).toString().padStart(2, '0');
+            let year = (d.getMonth() + 1).toString().padStart(2, '0');
+            return `${day}/${year}/${month}`;
+        }
+
+        function registerStudent() {
+            let name = document.getElementById('name').value;
+            let mobile = document.getElementById('mobile').value;
+            let email = document.getElementById('email').value;
+            let date = document.getElementById('date').value;
+            let location = document.getElementById('location').value;
+            
+            if (name && mobile && email && date && location) {
+                let formattedDate = formatDate(date);
+                let table = document.getElementById('registrationTable').getElementsByTagName('tbody')[0];
+                let newRow = table.insertRow();
+                newRow.innerHTML = `<td>${name}</td><td>${mobile}</td><td>${email}</td><td>${formattedDate}</td><td>${location}</td><td><button class='delete-btn' onclick='deleteRow(this)'>Delete</button></td>`;
+                
+                document.getElementById('name').value = '';
+                document.getElementById('mobile').value = '';
+                document.getElementById('email').value = '';
+                document.getElementById('date').value = '';
+                document.getElementById('location').value = '';
+            } else {
+                alert('Please fill all fields!');
+            }
+        }
+
+        function deleteRow(button) {
+            let row = button.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+        }
+
+        function clearAll() {
+            document.getElementById('registrationTable').getElementsByTagName('tbody')[0].innerHTML = '';
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            let doc = new jsPDF();
+            
+            doc.text("NEET Registration List", 10, 10);
+            
+            let table = document.getElementById('registrationTable');
+            let rows = table.getElementsByTagName('tr');
+            let data = [];
+            
+            for (let i = 1; i < rows.length; i++) {
+                let cells = rows[i].getElementsByTagName('td');
+                let rowData = [];
+                for (let j = 0; j < cells.length - 1; j++) { // Excluding the delete button
+                    rowData.push(cells[j].innerText);
+                }
+                if (rowData.length > 0) {
+                    data.push(rowData);
+                }
+            }
+            
+            doc.autoTable({
+                head: [["Name", "Mobile", "Email", "Date", "Location"]],
+                body: data
+            });
+            
+            doc.save("neet_registration_list.pdf");
+        }
+    </script>
+</body>
+</html>
